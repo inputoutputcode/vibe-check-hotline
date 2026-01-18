@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Scenario {
+  id         String   @id @default(cuid())
+  industry   String   // healthcare, salon, automotive, professional
+  taskType   String   // booking, inquiry, complaint, pricing
+  difficulty String   // easy, neutral, stressed
+  createdAt  DateTime @default(now())
+  calls      Call[]
+}
+
+model Call {
+  id            String     @id @default(cuid())
+  scenarioId    String
+  scenario      Scenario   @relation(fields: [scenarioId], references: [id])
+  phoneNumber   String
+  status        String     @default("pending") // pending, in_progress, completed, failed
+  transcript    String?    // Full conversation transcript
+  duration      Int?       // Call duration in seconds
+  outcome       String?    // appointment_suggested, info_provided, no_resolution, etc.
+  vapiCallId    String?    // External Vapi call ID for tracking
+  voicePath     String?    // Path to user's voice recording
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  feedback      Feedback[]
+}
+
+model Feedback {
+  id         String   @id @default(cuid())
+  callId     String
+  call       Call     @relation(fields: [callId], references: [id])
+  category   String   // greeting, clarity, warmth, question_handling, next_steps, closing
+  score      Int      // 1-5 rating
+  suggestion String?  // Improvement suggestion
+  createdAt  DateTime @default(now())
+}
